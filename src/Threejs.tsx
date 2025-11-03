@@ -126,9 +126,8 @@ function MyThree({ mineralName }: MyThreeProps) {
     // Try to size to the container; if it's not laid out yet or has 0 size,
     // fall back to a window-based size so the canvas remains visible.
     const rect = container?.getBoundingClientRect();
-    const width = rect && rect.width > 0 ? rect.width : window.innerWidth - 200;
-    const height =
-      rect && rect.height > 0 ? rect.height : window.innerHeight - 200;
+    const width = rect && rect.width > 0 ? rect.width : window.innerWidth;
+    const height = rect && rect.height > 0 ? rect.height : window.innerHeight;
     renderer.setSize(width, height);
 
     if (container) {
