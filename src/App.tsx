@@ -9,7 +9,7 @@ function App() {
     <>
       <link rel="icon" type="image/x-icon" href="/favicon.ico" />
       <title>
-        Mineral Viewer: Your one stop shop for all your mineral viewing needs
+        Mineral Viewer - Your one stop shop for all your mineral viewing needs
       </title>
       <div className="app-container">
         <div className="content">
