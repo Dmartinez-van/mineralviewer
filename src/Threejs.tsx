@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type MyThreeProps = {
   mineralName?: string;
@@ -12,7 +12,7 @@ type MyThreeProps = {
 function disposeMaterial(mat: THREE.Material | THREE.Material[] | null) {
   if (!mat) return;
   if (Array.isArray(mat)) return mat.forEach((m) => disposeMaterial(m));
-  const m = mat as any;
+  const m = mat as unknown;
   const texKeys = [
     "map",
     "alphaMap",
@@ -73,6 +73,37 @@ function MyThree({ mineralName }: MyThreeProps) {
   const refContainer = useRef<HTMLDivElement | null>(null);
   const currentModelRef = useRef<THREE.Object3D | null>(null);
   const mountedRef = useRef(true);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const initialCameraRef = useRef<THREE.Vector3 | null>(null);
+  const initialTargetRef = useRef<THREE.Vector3 | null>(null);
+  const [autoRotate, setAutoRotate] = useState(false);
+
+  // UI handlers that operate on the controls ref
+  const toggleAutoRotate = () => {
+    const c = controlsRef.current;
+    if (!c) return;
+    c.autoRotate = !c.autoRotate;
+    setAutoRotate(c.autoRotate);
+  };
+
+  const resetView = () => {
+    const cam = cameraRef.current;
+    const c = controlsRef.current;
+    if (!cam || !c) return;
+    if (initialCameraRef.current) cam.position.copy(initialCameraRef.current);
+    if (initialTargetRef.current) c.target.copy(initialTargetRef.current);
+    c.update();
+  };
+
+  const zoom = (delta: number) => {
+    const cam = cameraRef.current;
+    const c = controlsRef.current;
+    if (!cam || !c) return;
+    const dir = c.target.clone().sub(cam.position).normalize();
+    cam.position.add(dir.multiplyScalar(delta));
+    c.update();
+  };
 
   useEffect(() => {
     mountedRef.current = true;
@@ -119,6 +150,12 @@ function MyThree({ mineralName }: MyThreeProps) {
     };
     window.addEventListener("resize", handleResize);
 
+    // store refs so UI handlers can access them
+    controlsRef.current = controls;
+    cameraRef.current = camera;
+    initialCameraRef.current = camera.position.clone();
+    initialTargetRef.current = controls.target.clone();
+
     const loader = new GLTFLoader();
     loader.load(
       modelUrl,
@@ -162,6 +199,8 @@ function MyThree({ mineralName }: MyThreeProps) {
 
     const animate = function () {
       requestAnimationFrame(animate);
+      // update controls for damping and auto-rotate
+      controls.update();
       renderer.render(scene, camera);
     };
 
@@ -181,6 +220,14 @@ function MyThree({ mineralName }: MyThreeProps) {
           disposeNode(currentModelRef.current);
           currentModelRef.current = null;
         }
+        if (controlsRef.current) {
+          try {
+            controlsRef.current.dispose();
+          } catch {
+            // ignore
+          }
+          controlsRef.current = null;
+        }
       } catch {
         // ignore dispose errors
       }
@@ -194,6 +241,14 @@ function MyThree({ mineralName }: MyThreeProps) {
   return (
     <div ref={refContainer} className="three-container">
       <div className="three-overlay">Viewing {mineralName ?? "<Nothing>"}</div>
+      <div className="three-controls">
+        <button onClick={toggleAutoRotate}>
+          {autoRotate ? "Stop Auto-rotate" : "Auto-rotate"}
+        </button>
+        <button onClick={() => zoom(-0.6)}>Zoom Out</button>
+        <button onClick={() => zoom(0.6)}>Zoom In</button>
+        <button onClick={resetView}>Reset View</button>
+      </div>
     </div>
   );
 }
