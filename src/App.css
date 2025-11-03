@@ -7,42 +7,6 @@
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
-}
-
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
-}
-
 /* Layout for the Three.js viewer + sidebar */
 .app-container {
   height: 100vh;
@@ -75,17 +39,35 @@
 .mineral-list {
   list-style: none;
   padding: 0;
-  margin: 0;
 }
 
 .mineral-list li {
-  padding: 0.5rem 0.6rem;
-  border-radius: 4px;
+  padding: 0.6rem 0.8rem;
+  margin: 8px 0;
+  border-radius: 8px;
   cursor: pointer;
+  background: transparent;
+  color: #fff;
+  transition: transform 180ms cubic-bezier(0.2, 0.9, 0.2, 1),
+    box-shadow 180ms ease, background-color 180ms ease;
+  box-shadow: none;
 }
 
 .mineral-list li:hover {
-  background: #eaeaea;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.06),
+    rgba(255, 255, 255, 0.02)
+  );
+  color: #fff;
+  transform: translateY(-6px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45),
+    0 2px 0 rgba(255, 255, 255, 0.02) inset;
+}
+
+.mineral-list li:active {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
 }
 
 .viewer {
@@ -103,8 +85,11 @@
 
 /* Active mineral style */
 .mineral-list li.active {
-  background: #dcdcdc;
-  font-weight: 600;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-weight: 700;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.4);
 }
 
 /* Overlay label inside the Three.js container */
