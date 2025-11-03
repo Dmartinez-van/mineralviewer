@@ -8,11 +8,33 @@ type MyThreeProps = {
   mineralName?: string;
   filePath?: string;
 };
-const modelMap = {
-  Quartz: new URL("/models/quartz/scene.gltf", import.meta.url).href,
-  Feldspar: new URL("/models/feldspar/scene.gltf", import.meta.url).href,
-  // ...other imports
-};
+
+function normalizeModelScale(
+  object: THREE.Object3D<THREE.Object3DEventMap>,
+  targetSize = 1
+) {
+  // 1. Compute the model's bounding box
+  const box = new THREE.Box3().setFromObject(object);
+
+  // 2. Calculate the dimensions (size) of the bounding box
+  const size = new THREE.Vector3();
+  box.getSize(size); // stores the dimensions in the 'size' vector
+
+  // 3. Determine the maximum dimension
+  const maxDimension = Math.max(size.x, size.y, size.z);
+
+  // 4. Calculate the scale factor
+  if (maxDimension === 0) return; // Avoid division by zero
+  const scaleFactor = targetSize / maxDimension;
+
+  // 5. Apply the uniform scale factor to the object
+  object.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+  // Optional: Recenter the model to the origin (0,0,0) after scaling
+  const center = new THREE.Vector3();
+  box.getCenter(center);
+  object.position.sub(center.multiplyScalar(scaleFactor));
+}
 
 function MyThree({ mineralName }: MyThreeProps) {
   const refContainer = useRef<HTMLDivElement | null>(null);
@@ -67,7 +89,8 @@ function MyThree({ mineralName }: MyThreeProps) {
       modelUrl,
       (gltf) => {
         const root = gltf.scene;
-        root.scale.set(4, 4, 4);
+        // root.scale.set(4, 4, 4);
+        normalizeModelScale(root, 5);
 
         // Called when the resource is loaded
         // gltf.scene contains the loaded 3D scene
