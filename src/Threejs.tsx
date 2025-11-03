@@ -9,6 +9,39 @@ type MyThreeProps = {
   filePath?: string;
 };
 
+function disposeMaterial(mat: THREE.Material | THREE.Material[] | null) {
+  if (!mat) return;
+  if (Array.isArray(mat)) return mat.forEach((m) => disposeMaterial(m));
+  const m = mat as any;
+  const texKeys = [
+    "map",
+    "alphaMap",
+    "aoMap",
+    "emissiveMap",
+    "bumpMap",
+    "normalMap",
+    "roughnessMap",
+    "metalnessMap",
+    "displacementMap",
+    "envMap",
+  ];
+  texKeys.forEach((k) => {
+    const tex = m[k] as THREE.Texture | undefined;
+    if (tex && typeof tex.dispose === "function") tex.dispose();
+  });
+  mat.dispose();
+}
+
+function disposeNode(obj: THREE.Object3D) {
+  obj.traverse((child) => {
+    const mesh = child as THREE.Mesh;
+    if (mesh.isMesh) {
+      if (mesh.geometry) mesh.geometry.dispose();
+      if (mesh.material) disposeMaterial(mesh.material as THREE.Material);
+    }
+  });
+}
+
 function normalizeModelScale(
   object: THREE.Object3D<THREE.Object3DEventMap>,
   targetSize = 1
@@ -38,8 +71,11 @@ function normalizeModelScale(
 
 function MyThree({ mineralName }: MyThreeProps) {
   const refContainer = useRef<HTMLDivElement | null>(null);
+  const currentModelRef = useRef<THREE.Object3D | null>(null);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     const modelUrl = `${
       import.meta.env.BASE_URL
     }models/${mineralName?.toLowerCase()}/scene.gltf`;
@@ -83,19 +119,27 @@ function MyThree({ mineralName }: MyThreeProps) {
     };
     window.addEventListener("resize", handleResize);
 
-    //"./assets/model/" + (mineralName ?? "biotite") + "/scene.gltf",
     const loader = new GLTFLoader();
     loader.load(
       modelUrl,
       (gltf) => {
-        const root = gltf.scene;
-        // root.scale.set(4, 4, 4);
-        normalizeModelScale(root, 5);
+        if (!mountedRef.current) {
+          // Component unmounted before model loaded
+          disposeNode(gltf.scene);
+          return;
+        }
 
-        // Called when the resource is loaded
-        // gltf.scene contains the loaded 3D scene
-        // Add it to your Three.js scene
-        scene.add(root);
+        // Dispose and remove previous model immediately BEFORE adding the new one
+        if (currentModelRef.current) {
+          scene.remove(currentModelRef.current);
+          disposeNode(currentModelRef.current);
+          currentModelRef.current = null;
+        }
+
+        currentModelRef.current = gltf.scene;
+        normalizeModelScale(currentModelRef.current, 5);
+
+        scene.add(gltf.scene);
       },
       (xhr) => {
         // Called while loading is progressing
@@ -127,6 +171,16 @@ function MyThree({ mineralName }: MyThreeProps) {
     return () => {
       try {
         renderer.dispose();
+
+        // mark unmounted so late loader callbacks don't add models
+        mountedRef.current = false;
+
+        // remove and dispose current model if any
+        if (currentModelRef.current) {
+          scene.remove(currentModelRef.current);
+          disposeNode(currentModelRef.current);
+          currentModelRef.current = null;
+        }
       } catch {
         // ignore dispose errors
       }
