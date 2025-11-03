@@ -1,9 +1,17 @@
 import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 import { useEffect, useRef } from "react";
 
-function MyThree() {
-  const refContainer = useRef(null);
+type MyThreeProps = {
+  mineralName?: string;
+};
+
+function MyThree({ mineralName }: MyThreeProps) {
+  const refContainer = useRef<HTMLDivElement | null>(null);
+
+  const loader = new GLTFLoader();
 
   useEffect(() => {
     const scene = new THREE.Scene();
@@ -15,6 +23,8 @@ function MyThree() {
     );
     const renderer = new THREE.WebGLRenderer();
     const container = refContainer.current as HTMLDivElement | null;
+
+    const controls = new OrbitControls(camera, renderer.domElement);
 
     // Try to size to the container; if it's not laid out yet or has 0 size,
     // fall back to a window-based size so the canvas remains visible.
@@ -43,18 +53,40 @@ function MyThree() {
     };
     window.addEventListener("resize", handleResize);
 
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const cube = new THREE.Mesh(geometry, material);
+    //"./assets/model/" + (mineralName ?? "biotite") + "/scene.gltf",
 
-    scene.add(cube);
+    loader.load(
+      "/models/" + (mineralName ?? "biotite") + "/scene.gltf",
+      (gltf) => {
+        const root = gltf.scene;
+        root.scale.set(2, 2, 2);
+
+        // Called when the resource is loaded
+        // gltf.scene contains the loaded 3D scene
+        // Add it to your Three.js scene
+        scene.add(root);
+      },
+      (xhr) => {
+        // Called while loading is progressing
+        console.log(`${(xhr.loaded / xhr.total) * 100}% loaded`);
+      },
+      (error) => {
+        // Called when loading has errors
+        console.error("Error loading glTF model:", error);
+      }
+    );
+
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(2, 2, 5).normalize();
+    scene.add(light);
+
+    const ambientLight = new THREE.AmbientLight(0x404040);
+    scene.add(ambientLight);
+
     camera.position.z = 5;
 
-    let animationId: number | null = null;
     const animate = function () {
-      animationId = requestAnimationFrame(animate);
-      cube.rotation.x += 0.01;
-      cube.rotation.y += 0.01;
+      requestAnimationFrame(animate);
       renderer.render(scene, camera);
     };
 
@@ -62,7 +94,6 @@ function MyThree() {
 
     // Cleanup to prevent duplicate canvases/animations (React StrictMode double mount in dev)
     return () => {
-      if (animationId) cancelAnimationFrame(animationId);
       try {
         renderer.dispose();
       } catch {
@@ -75,7 +106,11 @@ function MyThree() {
     };
   }, []);
 
-  return <div ref={refContainer}></div>;
+  return (
+    <div ref={refContainer} className="three-container">
+      <div className="three-overlay">Viewing {mineralName ?? "<Nothing>"}</div>
+    </div>
+  );
 }
 
 export default MyThree;
