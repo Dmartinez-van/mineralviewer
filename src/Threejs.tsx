@@ -9,10 +9,17 @@ type MyThreeProps = {
   filePath?: string;
 };
 
+// A helper type describing a material that may contain texture map properties
+// keyed by strings. This lets us index the material safely for disposal.
+type MaterialWithMaps = THREE.Material & {
+  [key: string]: THREE.Texture | undefined;
+};
+
 function disposeMaterial(mat: THREE.Material | THREE.Material[] | null) {
   if (!mat) return;
   if (Array.isArray(mat)) return mat.forEach((m) => disposeMaterial(m));
-  const m = mat as unknown;
+  // Treat material as a loose record with possible texture properties.
+  const m = mat as MaterialWithMaps;
   const texKeys = [
     "map",
     "alphaMap",
