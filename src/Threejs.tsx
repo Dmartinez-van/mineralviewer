@@ -6,14 +6,22 @@ import { useEffect, useRef } from "react";
 
 type MyThreeProps = {
   mineralName?: string;
+  filePath?: string;
+};
+const modelMap = {
+  Quartz: new URL("/models/quartz/scene.gltf", import.meta.url).href,
+  Feldspar: new URL("/models/feldspar/scene.gltf", import.meta.url).href,
+  // ...other imports
 };
 
 function MyThree({ mineralName }: MyThreeProps) {
   const refContainer = useRef<HTMLDivElement | null>(null);
 
-  const loader = new GLTFLoader();
-
   useEffect(() => {
+    const modelUrl = `${
+      import.meta.env.BASE_URL
+    }models/${mineralName?.toLowerCase()}/scene.gltf`;
+
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(
       75,
@@ -54,12 +62,12 @@ function MyThree({ mineralName }: MyThreeProps) {
     window.addEventListener("resize", handleResize);
 
     //"./assets/model/" + (mineralName ?? "biotite") + "/scene.gltf",
-
+    const loader = new GLTFLoader();
     loader.load(
-      "/models/" + (mineralName ?? "biotite") + "/scene.gltf",
+      modelUrl,
       (gltf) => {
         const root = gltf.scene;
-        root.scale.set(2, 2, 2);
+        root.scale.set(4, 4, 4);
 
         // Called when the resource is loaded
         // gltf.scene contains the loaded 3D scene
@@ -104,7 +112,7 @@ function MyThree({ mineralName }: MyThreeProps) {
       }
       window.removeEventListener("resize", handleResize);
     };
-  }, []);
+  }, [mineralName]);
 
   return (
     <div ref={refContainer} className="three-container">

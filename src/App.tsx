@@ -3,7 +3,7 @@ import MyThree from "./Threejs";
 import { useState } from "react";
 
 function App() {
-  const [selected, setSelected] = useState<string>("Quartz");
+  const [selected, setSelected] = useState<string>("Gypsum");
 
   return (
     <div className="app-container">
@@ -12,34 +12,10 @@ function App() {
           <h3>Minerals</h3>
           <ul className="mineral-list">
             <li
-              className={selected === "Quartz" ? "active" : undefined}
-              onClick={() => setSelected("Quartz")}
+              className={selected === "Biotite" ? "active" : undefined}
+              onClick={() => setSelected("Biotite")}
             >
-              Quartz
-            </li>
-            <li
-              className={selected === "Feldspar" ? "active" : undefined}
-              onClick={() => setSelected("Feldspar")}
-            >
-              Feldspar
-            </li>
-            <li
-              className={selected === "Mica" ? "active" : undefined}
-              onClick={() => setSelected("Mica")}
-            >
-              Mica
-            </li>
-            <li
-              className={selected === "Calcite" ? "active" : undefined}
-              onClick={() => setSelected("Calcite")}
-            >
-              Calcite
-            </li>
-            <li
-              className={selected === "Pyrite" ? "active" : undefined}
-              onClick={() => setSelected("Pyrite")}
-            >
-              Pyrite
+              Biotite
             </li>
             <li
               className={selected === "Gypsum" ? "active" : undefined}
@@ -47,11 +23,38 @@ function App() {
             >
               Gypsum
             </li>
+            <li
+              className={selected === "Rhodonite" ? "active" : undefined}
+              onClick={() => setSelected("Rhodonite")}
+            >
+              Rhodonite
+            </li>
+            <li
+              className={selected === "Sphalerite" ? "active" : undefined}
+              onClick={() => setSelected("Sphalerite")}
+            >
+              Sphalerite
+            </li>
+            <li
+              className={selected === "Tourmaline" ? "active" : undefined}
+              onClick={() => setSelected("Tourmaline")}
+            >
+              Tourmaline
+            </li>
+            <li
+              className={selected === "Wollastonite" ? "active" : undefined}
+              onClick={() => setSelected("Wollastonite")}
+            >
+              Wollastonite
+            </li>
           </ul>
         </aside>
 
         <main className="viewer">
-          <MyThree mineralName={selected} />
+          <MyThree
+            mineralName={selected}
+            filePath={`/models/${selected.toLowerCase()}/scene.gltf`}
+          />
         </main>
       </div>
     </div>
