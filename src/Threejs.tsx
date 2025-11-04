@@ -119,6 +119,11 @@ function MyThree({ mineralName }: MyThreeProps) {
     }models/${mineralName?.toLowerCase()}/scene.gltf`;
 
     const scene = new THREE.Scene();
+    // Dark, neutral background works well for viewing mineral models:
+    // - provides high contrast for a wide range of colors
+    // - is easier on the eyes than pure black
+    // Chosen color: a deep slate (hex 0x0f1724)
+    scene.background = new THREE.Color(0x0f1724);
     const camera = new THREE.PerspectiveCamera(
       75,
       window.innerWidth / window.innerHeight,
@@ -246,7 +251,6 @@ function MyThree({ mineralName }: MyThreeProps) {
 
   return (
     <div ref={refContainer} className="three-container">
-      <div className="three-overlay">Viewing {mineralName ?? "<Nothing>"}</div>
       <div className="three-controls">
         <button onClick={toggleAutoRotate}>
           {autoRotate ? "Stop Auto-rotate" : "Auto-rotate"}

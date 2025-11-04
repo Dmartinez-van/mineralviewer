@@ -75,6 +75,7 @@
   background: #000;
   display: flex;
   align-items: stretch;
+  position: relative; /* allow absolute overlays */
 }
 
 .viewer > div {
@@ -115,6 +116,105 @@
   pointer-events: none;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
     Arial;
+}
+
+/* Info panel on the left of the canvas */
+#info-left {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 220px;
+  max-height: 70%;
+  /* use a high-contrast teal that reads well over a black background */
+  background: rgba(0, 150, 136, 0.92);
+  color: #fff;
+  padding: 12px;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 4;
+  overflow: auto;
+}
+
+#info-left h4 {
+  margin: 0 0 8px 0;
+}
+
+#info-left {
+  /* override the page-level centering so content inside the left info panel is left-aligned */
+  text-align: left;
+}
+
+#info-left ul,
+#info-left li {
+  /* ensure lists inside the left panel use normal list padding and left alignment */
+  text-align: left;
+}
+
+/* Info panel along the bottom of the canvas */
+#info-bottom {
+  position: absolute;
+  right: 2rem;
+  /* transform: translateX(-50%); */
+  bottom: 12px;
+  /* let height be driven by content so it can shrink when collapsed */
+  height: auto;
+  width: fit-content;
+  background: rgba(10, 10, 10, 0.8);
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  z-index: 4;
+  display: flex;
+  gap: 12px;
+  /* align to top so expanded content grows downward and container can shrink */
+  align-items: flex-start;
+  transition: padding 180ms ease, gap 180ms ease;
+}
+
+#info-bottom .notes {
+  color: #ddd;
+  margin-left: 8px;
+}
+
+/* bottom content area that can be collapsed leaving only header + toggle */
+.info-bottom-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-bottom-content {
+  max-height: 400px; /* upper bound for smooth expand animation */
+  opacity: 1;
+  transform: translateY(0);
+  transition: max-height 220ms ease, opacity 220ms ease, transform 220ms ease;
+  overflow: hidden;
+}
+
+#info-bottom.collapsed .info-bottom-content {
+  max-height: 0;
+  opacity: 0;
+  transform: translateY(8px);
+  pointer-events: none;
+}
+
+/* reduce padding when collapsed so the overall element height shrinks to just the header */
+#info-bottom.collapsed {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  gap: 8px;
+}
+
+/* remove bullet markers inside the info panels and adjust list spacing */
+#info-left ul,
+#info-bottom .controls-instructions ul,
+#info-left ul li,
+#info-bottom .controls-instructions ul li {
+  list-style: none;
+  margin-left: 0;
+  padding-left: 0;
 }
 
 .three-controls {
