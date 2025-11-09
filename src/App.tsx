@@ -82,6 +82,14 @@ function App() {
         Mineral Viewer - Your one stop shop for all your mineral viewing needs
       </title>
       <div className="app-container">
+        <div style={{ height: "100%", width: "100%" }}>
+          <img
+            src="/arman.png"
+            alt="Arman"
+            style={{ height: "100%", width: "100%" }}
+          />
+        </div>
+
         <div className="content">
           <aside className="sidebar">
             <h3>Minerals</h3>
